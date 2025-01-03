@@ -1,0 +1,76 @@
+// Import all of Bootstrap's CSS
+@import "bootstrap/scss/bootstrap"
+
+a,a:focus,a:hover
+  text-decoration: none
+
+[data-bs-theme-switch]
+  margin: 0rem 1rem
+  padding: 0.125rem 0.5rem
+
+  svg
+    transition: all 0.25s ease-out
+    pointer-events: none
+    &.fa-brightness
+      color: var(--bs-warning)
+    &.fa-moon
+      color: var(--bs-info)
+
+[data-bs-theme="dark"]
+  svg.fa-brightness
+    display: none
+
+[data-bs-theme="light"]  
+  svg.fa-moon
+    display: none
+
+i.far, .svg-inline--fa
+  display: inline-block
+  width: 1em
+  height: 1em
+  overflow: visible
+  vertical-align: -0.125em
+
+@keyframes spin
+  0%
+    transform: rotate(0deg)
+  100%
+    transform: rotate(360deg)
+
+.odb-animate-spin
+  animation: spin 0.75s linear infinite
+
+.odb-button
+  .fa-layers
+    display: inline-block
+    position: relative
+    text-align: center
+    vertical-align: -0.125em
+    height: 1em
+    width: 1em
+
+    svg
+      transition: all .25s ease-out
+      transform-origin: center center
+
+      bottom: 0
+      left: 0
+      margin: auto
+      position: absolute
+      right: 0
+      top: 0
+
+      &:last-of-type
+        opacity: 0
+
+      &:first-of-type
+        transform: scale(1)
+
+  &[disabled]
+    .fa-layers
+      svg
+        &:first-of-type
+          transform: scale(.5)
+          opacity: 0
+        &:last-of-type
+          opacity: 1
