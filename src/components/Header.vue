@@ -9,7 +9,7 @@ nav.navbar.navbar-expand.bg-body
         a.nav-link(
           :class="{ active: isActive(item.href) }",
           aria-current="page",
-          :href="item.href",
+          :href="item.href"
         ) {{ item.text }}
 
 ProgressBar(:total="totalRequests", :completed="completedRequests")

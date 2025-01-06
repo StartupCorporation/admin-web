@@ -1,91 +1,94 @@
 <template lang="pug">
-  .container-md.p-3
-    section.mb-3.hstack
-      hgroup
-        h1.mb-0 Створити продукт
-  
-    .alert.alert-danger(v-if="errorMessage") {{ errorMessage }}
-  
-    form(v-cloak, @submit.prevent="handleSubmit") 
-      fieldset.bg-body.p-3.rounded.mb-3.has-validation(
-        v-for="(entity, eIndex) in currentEntities",
-        :key="'entity-' + eIndex"
-      )
-        legend {{ entity.legend }}
-        .row(v-for="(field, fIndex) in entity.fields", :key="'field-' + fIndex")
-          label.col-sm-4.col-form-label(:for="field.name + eIndex") {{ field.label }}
-          .col-sm-8.mb-3
-            input.form-control(
-              :id="field.name + eIndex",
-              v-model="field.value",
-              :type="field.type || 'text'",
-              :name="field.name",
-              :placeholder="field.placeholder",
-              :class="fieldClass(field)",
-              :maxlength="field.maxlength"
-            )
-            .invalid-feedback(v-if="field.isEmpty") {{ field.emptyFeedback }}
-            .invalid-feedback(v-else-if="field.isInvalid") {{ field.invalidFeedback }}
-            .form-text.odb-loading(v-else, :class="field.isLoading && 'loading'") {{ field.formText || field.defaultFormText }}
+.container-md.p-3
+  section.mb-3.hstack
+    hgroup
+      h1.mb-0 Створити продукт
 
-      fieldset.bg-body.p-3.rounded.mb-3.has-validation(
-        v-for="(userEntity, uIndex) in formData.userEntities",
-        :key="'userEntity-' + uIndex"
-      )
-        legend.d-flex.justify-content-between.align-items-center
-          span {{ userEntity.legend }}
-          button.btn.btn-close.btn-sm(
-            v-if="uIndex > 0",
-            type="button",
-            aria-label="Close",
-            @click="deleteUser(uIndex)"
+  .alert.alert-danger(v-if="errorMessage") {{ errorMessage }}
+
+  form(v-cloak, @submit.prevent="handleSubmit") 
+    fieldset.bg-body.p-3.rounded.mb-3.has-validation(
+      v-for="(entity, eIndex) in currentEntities",
+      :key="'entity-' + eIndex"
+    )
+      legend {{ entity.legend }}
+      .row(v-for="(field, fIndex) in entity.fields", :key="'field-' + fIndex")
+        label.col-sm-4.col-form-label(:for="field.name + eIndex") {{ field.label }}
+        .col-sm-8.mb-3
+          input.form-control(
+            :id="field.name + eIndex",
+            v-model="field.value",
+            :type="field.type || 'text'",
+            :name="field.name",
+            :placeholder="field.placeholder",
+            :class="fieldClass(field)",
+            :maxlength="field.maxlength"
           )
+          .invalid-feedback(v-if="field.isEmpty") {{ field.emptyFeedback }}
+          .invalid-feedback(v-else-if="field.isInvalid") {{ field.invalidFeedback }}
+          .form-text.odb-loading(v-else, :class="field.isLoading && 'loading'") {{ field.formText || field.defaultFormText }}
 
-        .row(
-          v-for="(field, fIndex) in userEntity.fields",
-          :key="'userField-' + fIndex"
+    fieldset.bg-body.p-3.rounded.mb-3.has-validation(
+      v-for="(userEntity, uIndex) in formData.userEntities",
+      :key="'userEntity-' + uIndex"
+    )
+      legend.d-flex.justify-content-between.align-items-center
+        span {{ userEntity.legend }}
+        button.btn.btn-close.btn-sm(
+          v-if="uIndex > 0",
+          type="button",
+          aria-label="Close",
+          @click="deleteUser(uIndex)"
         )
-          label.col-sm-4.col-form-label(:for="field.name + 'User' + uIndex") {{ field.label }}
 
-          .col-sm-8.mb-3
-            label.bg-body-tertiary.rounded.mb-2.d-flex.justify-content-center.align-items-center(style="width: 210px; height: 210px;", :for="field.name + 'User' + uIndex")
-              img(
-                v-if="field.previewUrl"
-                :src="field.previewUrl"
-                alt="Preview"
-                style="max-width: 200px; max-height: 200px;"
-              )
+      .row(
+        v-for="(field, fIndex) in userEntity.fields",
+        :key="'userField-' + fIndex"
+      )
+        label.col-sm-4.col-form-label(:for="field.name + 'User' + uIndex") {{ field.label }}
 
-            input.form-control(
-              :id="field.name + 'User' + uIndex",
-              @change="onFileChanged($event, field)",
-              :type="field.type || 'text'",
-              :placeholder="field.placeholder",
-              :aria-label="field.label",
-              :class="fieldClass(field)"
+        .col-sm-8.mb-3
+          label.bg-body-tertiary.rounded.mb-2.d-flex.justify-content-center.align-items-center(
+            style="width: 210px; height: 210px",
+            :for="field.name + 'User' + uIndex"
+          )
+            img(
+              v-if="field.previewUrl",
+              :src="field.previewUrl",
+              alt="Preview",
+              style="max-width: 200px; max-height: 200px"
             )
-            .invalid-feedback(v-if="field.isEmpty") {{ field.emptyFeedback }}
-            .invalid-feedback(v-else-if="field.isInvalid") {{ field.invalidFeedback }}
-            .form-text.odb-loading(v-else) {{ field.formText || "" }}
 
-      .row.g-3.mb-3
-        .col-12
-          button.btn.btn-sm(type="button", @click="addUserEntity")
-            i.fa-regular.fa-image.me-1
-            | Додати ще фото
-  
-      .row
-        .col.d-flex.justify-content-center
-          button.btn.btn-primary.ms-3.ms-sm-2(type="submit")
-            template(v-if="!isSubmitting")
-              | Створити
-            template(v-else)
-              span.spinner-border.spinner-border-sm.me-2(
-                role="status",
-                aria-hidden="true"
-              )
-              | Завантаження...
-  </template>
+          input.form-control(
+            :id="field.name + 'User' + uIndex",
+            @change="onFileChanged($event, field)",
+            :type="field.type || 'text'",
+            :placeholder="field.placeholder",
+            :aria-label="field.label",
+            :class="fieldClass(field)"
+          )
+          .invalid-feedback(v-if="field.isEmpty") {{ field.emptyFeedback }}
+          .invalid-feedback(v-else-if="field.isInvalid") {{ field.invalidFeedback }}
+          .form-text.odb-loading(v-else) {{ field.formText || "" }}
+
+    .row.g-3.mb-3
+      .col-12
+        button.btn.btn-sm(type="button", @click="addUserEntity")
+          i.fa-regular.fa-image.me-1
+          | Додати ще фото
+
+    .row
+      .col.d-flex.justify-content-center
+        button.btn.btn-primary.ms-3.ms-sm-2(type="submit")
+          template(v-if="!isSubmitting")
+            | Створити
+          template(v-else)
+            span.spinner-border.spinner-border-sm.me-2(
+              role="status",
+              aria-hidden="true"
+            )
+            | Завантаження...
+</template>
 
 <script>
 import getCookie from "../../utils/cookie-helper.js";
@@ -452,10 +455,10 @@ export default {
             ...contract,
             users: licenses,
           },
-          authToken
+          authToken,
         );
         await this.$router.push(
-          `/a/subscriptions?offset=0&limit=12&sortDirection=DESC&sortKeys=startDate&status=active&productId=${PRODUCT_ID}`
+          `/a/subscriptions?offset=0&limit=12&sortDirection=DESC&sortKeys=startDate&status=active&productId=${PRODUCT_ID}`,
         );
       } catch (error) {
         this.errorMessage = error.message || "Невідома помилка";
@@ -537,7 +540,7 @@ export default {
   async mounted() {
     const productTypes = await getData(`${VITE_API_SERVER}/products`);
     const product = productTypes.data.corporate.products.find(
-      (p) => p._id === PRODUCT_ID
+      (p) => p._id === PRODUCT_ID,
     );
     this.pricePerLicense = product.price;
   },
