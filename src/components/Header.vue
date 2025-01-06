@@ -24,6 +24,10 @@ export default {
     return {
       navItems: [
         {
+          text: "Категорії",
+          href: "/admin/categories",
+        },
+        {
           text: "Продукти",
           href: "/admin/products",
         },
