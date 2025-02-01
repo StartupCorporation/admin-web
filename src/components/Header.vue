@@ -24,7 +24,7 @@ export default {
     return {
       navItems: [
         {
-          text: "Callback",
+          text: "Зворотній зв'язок",
           href: "/admin/callback",
         },
         {

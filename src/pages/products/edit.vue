@@ -225,6 +225,7 @@ export default {
       entities: [createEntity("Головне")],
       photoEntities: [createPhotoEntity("Фото")],
     },
+    imagesToRemove: [],
     isSubmitting: false,
     errorMessage: "",
   }),
@@ -368,7 +369,7 @@ export default {
     },
     prepareData() {
       const formDataToSend = new FormData();
-      // Добавляем значения текстовых полей
+
       this.formData.entities.forEach((entity) => {
         entity.fields.forEach((field) => {
           let val = field.value;
@@ -379,22 +380,19 @@ export default {
         });
       });
 
-      const existingImages = [];
       this.formData.photoEntities.forEach((photoEntity) => {
         if (photoEntity.file) {
           formDataToSend.append(
-            "images",
+            "imagesToAdd",
             photoEntity.file,
             photoEntity.file.name,
           );
-        } else if (photoEntity.isExisting && photoEntity.previewUrl) {
-          const parts = photoEntity.previewUrl.split("/");
-          const imageName = parts[parts.length - 1];
-          existingImages.push(imageName);
         }
       });
 
-      formDataToSend.append("existingImages", JSON.stringify(existingImages));
+      this.imagesToRemove.forEach((photoEntity) => {
+        formDataToSend.append("imagesToRemove", photoEntity);
+      });
 
       return formDataToSend;
     },
@@ -420,9 +418,19 @@ export default {
     },
     deletePhoto(index) {
       const photoEntity = this.formData.photoEntities[index];
-      if (photoEntity.previewUrl) {
+
+      if (photoEntity.isExisting && photoEntity.previewUrl) {
+        this.imagesToRemove.push(photoEntity.imageName);
+      }
+
+      if (
+        !photoEntity.isExisting &&
+        photoEntity.file &&
+        photoEntity.previewUrl
+      ) {
         URL.revokeObjectURL(photoEntity.previewUrl);
       }
+
       this.formData.photoEntities.splice(index, 1);
     },
     fieldClass(field) {
@@ -472,6 +480,7 @@ export default {
       if (product.images && product.images.length > 0) {
         this.formData.photoEntities = product.images.map((image) => ({
           file: null,
+          imageName: image,
           previewUrl: `${VITE_NGINX_SERVER}/images/${image}`,
           isInvalid: false,
           isEmpty: false,

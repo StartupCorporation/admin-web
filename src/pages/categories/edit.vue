@@ -168,9 +168,8 @@ const createPhotoEntity = (legend) => ({
       onChangeHandler: (field) => (newValue) => {
         resetFieldErrors(field);
 
-        if (!newValue) {
+        if (!newValue || newValue.length === 0) {
           field.value = null;
-          field.previewUrl = "";
           return;
         }
 
@@ -185,6 +184,11 @@ const createPhotoEntity = (legend) => ({
         }
       },
       validator: (field) => {
+        if (!field.value && field.previewUrl) {
+          field.isEmpty = false;
+          field.isInvalid = false;
+          return true;
+        }
         field.isEmpty = !field.value && field.required;
         return !field.isEmpty && !field.isInvalid;
       },

@@ -19,6 +19,7 @@
       table.table
         thead
           tr
+            th
             th Назва
             th Опис
             th Ціна, грн
@@ -27,11 +28,17 @@
             th(style="width: 11px; height: 11px")
         tbody
           tr(v-for="product in products")
+            td(style="width: 110px; height: 110px")
+              .h-100.w-100.d-flex.justify-content-center.align-items-center
+                img(
+                  :src="VITE_NGINX_SERVER + '/images/' + product.images[0]",
+                  style="max-width: 100px; max-height: 100px"
+                )
             td {{ product.name }}
             td {{ product.description }}
             td {{ product.price }}
             td {{ product.stockQuantity }}
-            td {{ product.category }}
+            td {{ product.categoryName }}
             td
               .btn-group
                 a.btn.btn-primary(:href="'/admin/products/' + product.id")

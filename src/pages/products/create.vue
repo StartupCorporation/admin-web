@@ -382,16 +382,6 @@ export default {
         });
       });
 
-      // this.formData.photoEntities.forEach((photoEntity, index) => {
-      //   if (photoEntity.file) {
-      //     formDataToSend.append(
-      //       `images[${index}]`,
-      //       photoEntity.file,
-      //       photoEntity.file.name,
-      //     );
-      //   }
-      // });
-
       this.formData.photoEntities.forEach((photoEntity) => {
         if (photoEntity.file) {
           formDataToSend.append(
