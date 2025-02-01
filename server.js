@@ -7,8 +7,9 @@ import { authMiddleware } from "./auth-middleware.js";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-const NODE_ENV = process.env.NODE_ENV || "development";
 dotenv.config({ path: `./.env` });
+
+const NODE_ENV = process.env.NODE_ENV || "development";
 
 const app = express();
 
@@ -23,6 +24,6 @@ app.get("*", (req, res) => {
 const PORT = process.env.VITE_PORT || 3000;
 app.listen(PORT, () => {
   console.log(
-    `Server is running on port  http://localhost:${PORT} in ${NODE_ENV} mode.`
+    `Server is running on port  http://localhost:${PORT} in ${NODE_ENV} mode.`,
   );
 });
