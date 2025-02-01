@@ -2,6 +2,9 @@ import { createRouter, createWebHistory } from "vue-router";
 
 import Default from "../pages/default/index.vue";
 
+import Callback from "../pages/callback/index.vue";
+import Categories from "../pages/categories/index.vue";
+import CategoriesCreate from "../pages/categories/create.vue";
 import Products from "../pages/products/index.vue";
 import ProductsCreate from "../pages/products/create.vue";
 
@@ -13,6 +16,18 @@ const routes = [
     component: Default,
   },
 
+  {
+    path: "/admin/callback",
+    component: Callback,
+  },
+  {
+    path: "/admin/categories",
+    component: Categories,
+  },
+  {
+    path: "/admin/categories/create",
+    component: CategoriesCreate,
+  },
   {
     path: "/admin/products",
     component: Products,

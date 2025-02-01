@@ -2,11 +2,11 @@
 .container-md.p-3
   section.mb-3.hstack
     hgroup
-      h1.mb-0 Створити продукт
+      h1.mb-0 Створити категорію
 
   .alert.alert-danger(v-if="errorMessage") {{ errorMessage }}
 
-  form(v-cloak, @submit.prevent="handleSubmit")
+  form(v-cloak, @submit.prevent="handleSubmit") 
     fieldset.bg-body.p-3.rounded.mb-3.has-validation(
       v-for="(entity, eIndex) in currentEntities",
       :key="'entity-' + eIndex"
@@ -15,69 +15,64 @@
       .row(v-for="(field, fIndex) in entity.fields", :key="'field-' + fIndex")
         label.col-sm-4.col-form-label(:for="field.name + eIndex") {{ field.label }}
         .col-sm-8.mb-3
-          template(v-if="field.type === 'select'")
-            select.form-select(
-              :id="field.name + eIndex",
-              v-model="field.value",
-              :name="field.name",
-              :class="fieldClass(field)"
-            )
-              option(value="") Оберіть категорію
-              option(
-                v-for="option in field.options",
-                :key="option.id",
-                :value="option.id"
-              ) {{ option.name }}
-          template(v-else)
-            input.form-control(
-              :id="field.name + eIndex",
-              v-model="field.value",
-              :type="field.type || 'text'",
-              :name="field.name",
-              :placeholder="field.placeholder",
-              :class="fieldClass(field)",
-              :maxlength="field.maxlength",
-              autocomplete="off"
-            )
+          input.form-control(
+            :id="field.name + eIndex",
+            v-model="field.value",
+            :type="field.type || 'text'",
+            :name="field.name",
+            :placeholder="field.placeholder",
+            :class="fieldClass(field)",
+            :maxlength="field.maxlength",
+            autocomplete="off"
+          )
           .invalid-feedback(v-if="field.isEmpty") {{ field.emptyFeedback }}
           .invalid-feedback(v-else-if="field.isInvalid") {{ field.invalidFeedback }}
           .form-text.odb-loading(v-else, :class="field.isLoading && 'loading'") {{ field.formText || field.defaultFormText }}
 
-    fieldset.bg-body.p-4.rounded.mb-3.has-validation
-      legend Фото
-      .d-flex.flex-wrap.gap-3
-        div(
-          v-for="(photoEntity, pIndex) in formData.photoEntities",
-          :key="'photoEntity-' + pIndex",
-          style="position: relative; width: 210px; height: 210px"
+    fieldset.bg-body.p-3.rounded.mb-3.has-validation(
+      v-for="(photoEntity, uIndex) in formData.photoEntities",
+      :key="'photoEntity-' + uIndex"
+    )
+      legend.d-flex.justify-content-between.align-items-center
+        span {{ photoEntity.legend }}
+        button.btn.btn-close.btn-sm(
+          v-if="uIndex > 0",
+          type="button",
+          aria-label="Close",
+          @click="deletePhoto(uIndex)"
         )
+
+      .row(
+        v-for="(field, fIndex) in photoEntity.fields",
+        :key="'photoField-' + fIndex"
+      )
+        label.col-sm-4.col-form-label(:for="field.name + 'Photo' + uIndex") {{ field.label }}
+
+        .col-sm-8.mb-3
           label.bg-body-tertiary.rounded.d-flex.justify-content-center.align-items-center(
-            :class="photoFieldClass(photoEntity)",
             style="width: 210px; height: 210px; cursor: pointer",
-            :for="'addPhoto-' + pIndex"
+            :for="field.name + 'Photo' + uIndex"
           )
-            template(v-if="photoEntity.file")
-              img(
-                :src="photoEntity.previewUrl",
-                alt="Preview",
-                style="max-width: 200px; max-height: 200px"
-              )
-              button.btn.position-absolute.top-0.end-0(
-                type="button",
-                aria-label="Delete",
-                @click="deletePhoto(pIndex)"
-              )
-                i.fa-solid.fa-trash.text-danger
+            img(
+              v-if="field.previewUrl",
+              :src="field.previewUrl",
+              alt="Preview",
+              style="max-width: 200px; max-height: 200px"
+            )
             i.fa-regular.fa-plus.fs-3.text-muted(v-else)
           input(
-            :id="'addPhoto-' + pIndex",
+            :id="field.name + 'Photo' + uIndex",
             type="file",
             accept="image/*",
-            @change="onFileAdded($event, pIndex)",
+            @change="onFileChanged($event, field)",
+            :placeholder="field.placeholder",
+            :aria-label="field.label",
+            :class="fieldClass(field)",
             style="display: none"
           )
-          .invalid-feedback(v-if="photoEntity.isEmpty") Фото обов'язково
-          .invalid-feedback(v-else-if="photoEntity.isInvalid") Невірний формат зображення
+          .invalid-feedback(v-if="field.isEmpty") {{ field.emptyFeedback }}
+          .invalid-feedback(v-else-if="field.isInvalid") {{ field.invalidFeedback }}
+          .form-text.odb-loading(v-else) {{ field.formText || "" }}
 
     .row
       .col.d-flex.justify-content-center
@@ -98,17 +93,16 @@ import getData from "../../utils/fetch.js";
 
 const { VITE_API_SERVER } = process.env;
 
-const RE_NATURAL_WITH_ZERO = /^[0-9]\d*$/;
-const RE_NATURAL_WITH_ZERO_D = /^(0(\.\d+)?|[1-9]\d*(\.\d+)?)$/;
-
 const validator = (re) => (field) => {
   field.isEmpty = false;
   field.isInvalid = false;
+
   if (!field.value && field.required) {
     field.isEmpty = true;
   } else if (re && field.value) {
     field.isInvalid = !re.test(field.value);
   }
+
   return field.required ? !field.isEmpty && !field.isInvalid : !field.isInvalid;
 };
 
@@ -128,7 +122,7 @@ const createEntity = (legend) => ({
       required: true,
       formText: "",
       invalidFeedback: "",
-      emptyFeedback: "Назва продукту обов'язкова",
+      emptyFeedback: "Назва категорії обов'язкова",
       value: "",
       isLoading: false,
       onChangeHandler: (field) => (newValue) => {
@@ -146,56 +140,7 @@ const createEntity = (legend) => ({
       required: true,
       formText: "",
       invalidFeedback: "",
-      emptyFeedback: "Опис продукту обов'язковий",
-      value: "",
-      onChangeHandler: (field) => (newValue) => {
-        resetFieldErrors(field);
-      },
-      validator: (field) => {
-        field.isEmpty = !field.value && field.required;
-        return !field.isEmpty;
-      },
-    },
-    {
-      name: "price",
-      label: "Ціна, грн",
-      placeholder: "150.99",
-      type: "text",
-      convert: "number",
-      required: true,
-      formText: "",
-      invalidFeedback: "",
-      emptyFeedback: "Ціна продукту обов'язкова",
-      value: "0",
-      onChangeHandler: (field) => (newValue) => {
-        resetFieldErrors(field);
-      },
-      validator: validator(RE_NATURAL_WITH_ZERO_D),
-    },
-    {
-      name: "stockQuantity",
-      label: "Кількість на складі",
-      placeholder: "",
-      type: "text",
-      convert: "number",
-      required: true,
-      invalidFeedback: "Вкажіть ціле натуральне число",
-      emptyFeedback: "Кількість товару обов'язкова",
-      value: "0",
-      onChangeHandler: (field) => (newValue) => {
-        resetFieldErrors(field);
-      },
-      validator: validator(RE_NATURAL_WITH_ZERO),
-    },
-    {
-      name: "categoryId",
-      label: "Категорія",
-      required: true,
-      type: "select",
-      options: [],
-      formText: "",
-      invalidFeedback: "",
-      emptyFeedback: "Оберіть категорію",
+      emptyFeedback: "Опис категорії обов'язковий",
       value: "",
       onChangeHandler: (field) => (newValue) => {
         resetFieldErrors(field);
@@ -210,19 +155,48 @@ const createEntity = (legend) => ({
 
 const createPhotoEntity = (legend) => ({
   legend,
-  file: null,
-  previewUrl: "",
-  isInvalid: false,
-  isEmpty: false,
-  isShowError: false,
+  fields: [
+    {
+      name: "photo",
+      label: "Фото",
+      type: "file",
+      required: true,
+      invalidFeedback: "Невірний формат зображення",
+      emptyFeedback: "Фото обов'язково",
+      value: null,
+      previewUrl: "",
+      onChangeHandler: (field) => (newValue) => {
+        resetFieldErrors(field);
+
+        if (!newValue) {
+          field.value = null;
+          field.previewUrl = "";
+          return;
+        }
+
+        const file = newValue instanceof FileList ? newValue[0] : newValue;
+        field.value = file;
+
+        if (file && file.type && file.type.startsWith("image/")) {
+          field.previewUrl = URL.createObjectURL(file);
+        } else {
+          field.previewUrl = "";
+          field.isInvalid = true;
+        }
+      },
+      validator: (field) => {
+        field.isEmpty = !field.value && field.required;
+        return !field.isEmpty && !field.isInvalid;
+      },
+    },
+  ],
 });
 
 export default {
   data: () => ({
-    categories: [],
     formData: {
       entities: [createEntity("Головне")],
-      photoEntities: [createPhotoEntity("Фото")],
+      photoEntities: [createPhotoEntity("")],
     },
     isSubmitting: false,
     errorMessage: "",
@@ -231,7 +205,6 @@ export default {
     currentEntities() {
       return this.formData.entities;
     },
-
     isFormValid() {
       for (const entity of this.formData.entities) {
         for (const field of entity.fields) {
@@ -241,57 +214,21 @@ export default {
         }
       }
 
-      if (
-        this.formData.photoEntities.length === 1 &&
-        !this.formData.photoEntities[0].file
-      ) {
-        return false;
-      }
-
-      for (let i = 0; i < this.formData.photoEntities.length; i++) {
-        const photoEntity = this.formData.photoEntities[i];
-        if (
-          i === this.formData.photoEntities.length - 1 &&
-          this.formData.photoEntities.length > 1 &&
-          !photoEntity.file
-        )
-          continue;
-        if (
-          !photoEntity.file ||
-          (photoEntity.file && !photoEntity.file.type.startsWith("image/"))
-        ) {
-          return false;
+      for (const entity of this.formData.photoEntities) {
+        for (const field of entity.fields) {
+          if (!field.validator(field)) {
+            return false;
+          }
         }
       }
+
       return true;
     },
   },
   methods: {
-    createWatcher(field) {
-      this.$watch(() => field.value, field.onChangeHandler(field));
-    },
-    onFileAdded(event, index) {
-      const fileList = event.target.files;
-      if (fileList && fileList.length > 0) {
-        const file = fileList[0];
-        const photoEntity = this.formData.photoEntities[index];
-        if (file && file.type && file.type.startsWith("image/")) {
-          photoEntity.file = file;
-          photoEntity.previewUrl = URL.createObjectURL(file);
-          photoEntity.isInvalid = false;
-          photoEntity.isEmpty = false;
-        } else {
-          photoEntity.file = file;
-          photoEntity.previewUrl = "";
-          photoEntity.isInvalid = true;
-          photoEntity.isEmpty = false;
-        }
-
-        if (index === this.formData.photoEntities.length - 1) {
-          this.formData.photoEntities.push(createPhotoEntity("Фото"));
-        }
-      }
-      event.target.value = "";
+    onFileChanged(e, field) {
+      const fileList = e.target.files;
+      field.onChangeHandler(field)(fileList);
     },
     async handleSubmit() {
       this.errorMessage = "";
@@ -312,96 +249,71 @@ export default {
       }
 
       if (isValid) {
-        if (
-          this.formData.photoEntities.length === 1 &&
-          !this.formData.photoEntities[0].file
-        ) {
-          this.formData.photoEntities[0].isEmpty = true;
-          isValid = false;
-          this.scrollToError();
-        } else {
-          for (let i = 0; i < this.formData.photoEntities.length; i++) {
-            const photoEntity = this.formData.photoEntities[i];
-            if (
-              i === this.formData.photoEntities.length - 1 &&
-              this.formData.photoEntities.length > 1 &&
-              !photoEntity.file
-            )
-              continue;
-            if (!photoEntity.file) {
-              photoEntity.isEmpty = true;
+        for (const entity of this.formData.photoEntities) {
+          for (const field of entity.fields) {
+            if (!field.validator(field)) {
+              field.isShowError = true;
               isValid = false;
               this.scrollToError();
               break;
-            }
-            if (
-              photoEntity.file &&
-              !photoEntity.file.type.startsWith("image/")
-            ) {
-              photoEntity.isInvalid = true;
-              isValid = false;
-              this.scrollToError();
-              break;
+            } else {
+              field.isShowError = false;
             }
           }
+          if (!isValid) break;
         }
       }
+
       if (!isValid) return;
 
       const preparedData = this.prepareData();
+
       this.isSubmitting = true;
+
       try {
-        const response = await fetch(`${VITE_API_SERVER}/api/products`, {
+        const response = await fetch(`${VITE_API_SERVER}/api/categories`, {
           method: "POST",
           body: preparedData,
         });
+
         if (!response.ok) {
           const errorData = await response.json();
           throw new Error(errorData.message || "Помилка сервера");
         }
-        this.$router.push("/admin/products");
+
+        this.$router.push("/admin/categories");
       } catch (error) {
         this.errorMessage = error.message || "Невідома помилка";
         this.isSubmitting = false;
         this.scrollToError();
+
         setTimeout(() => {
           this.errorMessage = "";
         }, 5000);
       }
     },
     prepareData() {
-      const formDataToSend = new FormData();
+      const formData = new FormData();
 
       this.formData.entities.forEach((entity) => {
         entity.fields.forEach((field) => {
-          let val = field.value;
-          if (field.convert === "number") {
-            val = parseFloat(val) || 0;
-          }
-          formDataToSend.append(field.name, val);
+          formData.append(field.name, field.value);
         });
       });
 
-      // this.formData.photoEntities.forEach((photoEntity, index) => {
-      //   if (photoEntity.file) {
-      //     formDataToSend.append(
-      //       `images[${index}]`,
-      //       photoEntity.file,
-      //       photoEntity.file.name,
-      //     );
-      //   }
-      // });
-
-      this.formData.photoEntities.forEach((photoEntity) => {
-        if (photoEntity.file) {
-          formDataToSend.append(
-            "images",
-            photoEntity.file,
-            photoEntity.file.name,
-          );
-        }
+      this.formData.photoEntities.forEach((photoEntity, index) => {
+        photoEntity.fields.forEach((field) => {
+          if (field.value) {
+            formData.append("image", field.value, field.value.name);
+          }
+        });
       });
-      return formDataToSend;
+
+      return formData;
+    },
+
+    createWatcher(field) {
+      this.$watch(() => field.value, field.onChangeHandler(field));
     },
     scrollToError() {
       this.$nextTick(() => {
@@ -423,35 +335,18 @@ export default {
         }
       });
     },
-    deletePhoto(index) {
-      const photoEntity = this.formData.photoEntities[index];
-      if (photoEntity.previewUrl) {
-        URL.revokeObjectURL(photoEntity.previewUrl);
-      }
-      this.formData.photoEntities.splice(index, 1);
-    },
     fieldClass(field) {
       return [field.class, field.isShowError && "is-invalid"]
         .filter(Boolean)
         .join(" ");
     },
-    photoFieldClass(photoEntity) {
-      return photoEntity.isEmpty || photoEntity.isInvalid ? "is-invalid" : "";
-    },
   },
-  async mounted() {
-    const data = await getData(VITE_API_SERVER + "/api/categories");
-    this.categories = data;
-    const mainEntity = this.formData.entities[0];
-    const categoryField = mainEntity.fields.find(
-      (f) => f.name === "categoryId",
-    );
-    if (categoryField) {
-      categoryField.options = data;
-    }
-  },
+  async mounted() {},
   created() {
     this.formData.entities.forEach((entity) => {
+      entity.fields.forEach(this.createWatcher);
+    });
+    this.formData.photoEntities.forEach((entity) => {
       entity.fields.forEach(this.createWatcher);
     });
   },

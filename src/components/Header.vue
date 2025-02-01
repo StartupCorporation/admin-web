@@ -24,6 +24,10 @@ export default {
     return {
       navItems: [
         {
+          text: "Callback",
+          href: "/admin/callback",
+        },
+        {
           text: "Категорії",
           href: "/admin/categories",
         },

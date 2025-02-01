@@ -2,9 +2,9 @@
 .container
   nav.navbar
     .my-1
-      a.btn.btn-primary(href="/admin/products/create")
+      a.btn.btn-primary(href="/admin/categories/create")
         i.fa-solid.fa-plus.me-2
-        | Додати продукт
+        | Додати категорію
   .row.g-2.mb-2
     .col(v-for="(widget, key) in widgets")
       DigitsWidget(
@@ -19,19 +19,20 @@
       table.table
         thead
           tr
+            th
             th Назва
             th Опис
-            th Ціна, грн
-            th Кількість на складі
-            th Категорія
             th(style="width: 11px; height: 11px")
         tbody
-          tr(v-for="product in products")
-            td {{ product.name }}
-            td {{ product.description }}
-            td {{ product.price }}
-            td {{ product.stockQuantity }}
-            td {{ product.category }}
+          tr(v-for="category in categories")
+            td(style="width: 110px; height: 110px")
+              .h-100.w-100.d-flex.justify-content-center.align-items-center
+                img(
+                  :src="VITE_NGINX_SERVER + '/images/' + category.image",
+                  style="max-width: 100px; max-height: 100px"
+                )
+            td {{ category.name }}
+            td {{ category.description }}
             td
               .btn-group
                 a.btn.btn-primary
@@ -40,7 +41,7 @@
                   i.fa-solid.fa-trash(
                     data-bs-toggle="modal",
                     data-bs-target="#deleteModal",
-                    @click="handleTrashButton(product.id, product.name)"
+                    @click="handleTrashButton(category.id, category.name)"
                   )
 
   .row(v-if="pagination && pagination.totalPages > 1 && pagination.count > 0")
@@ -58,19 +59,19 @@
   .modal-dialog
     .modal-content
       .modal-header
-        h1#deleteModalLabel.modal-title.fs-5 Видалити продукт
+        h1#deleteModalLabel.modal-title.fs-5 Видалити категорію
         button.btn-close(
           type="button",
           data-bs-dismiss="modal",
           aria-label="Close"
         )
       .modal-body
-        p Ви впечені що хочете видалити продукт «{{ productToDelete.name }}»?
+        p Ви впечені що хочете видалити категорію «{{ categoryToDelete.name }}»?
       .modal-footer
         button.btn.btn-primary(
           type="button",
           data-bs-dismiss="modal",
-          @click="handelDeleteProduct(productToDelete.id)"
+          @click="handelDeleteCategory(categoryToDelete.id)"
         ) Видалити
 </template>
 
@@ -86,21 +87,21 @@ export default {
   components: { DigitsWidget, Paginator },
   watch: {
     "$route.query": {
-      handler: "loadProductsData",
+      handler: "loadCategoriesData",
     },
   },
   data() {
     return {
       VITE_NGINX_SERVER,
-      products: [],
-      productToDelete: { id: "", name: "" },
+      categories: [],
+      categoryToDelete: { id: "", name: "" },
       count: 0,
       offset: 0,
       limit: 12,
       pagination: {},
       widgets: {
-        activeUsers: {
-          title: "Кількість продуктів",
+        CategoriesCount: {
+          title: "Кількість категорій",
           from: 0,
           to: 0,
         },
@@ -108,21 +109,21 @@ export default {
     };
   },
   async created() {
-    await this.loadProductsData();
+    await this.loadCategoriesData();
 
-    this.widgets.activeUsers.to = this.count;
+    this.widgets.CategoriesCount.to = this.count;
   },
   methods: {
-    async loadProductsData() {
+    async loadCategoriesData() {
       const offset = (this.$route.query.page - 1) * this.limit || 0;
 
       let count = 0;
-      const data = await getData(VITE_API_SERVER + "/api/products", {
+      const data = await getData(VITE_API_SERVER + "/api/categories", {
         offset,
         limit: this.limit,
       });
 
-      this.products = data;
+      this.categories = data;
       this.count = count;
       this.offset = offset;
 
@@ -137,12 +138,12 @@ export default {
       }
     },
     handleTrashButton(id, name) {
-      this.productToDelete.id = id;
-      this.productToDelete.name = name;
+      this.categoryToDelete.id = id;
+      this.categoryToDelete.name = name;
     },
-    handelDeleteProduct(id) {
-      fetch(VITE_API_SERVER + "/api/products/" + id, { method: "DELETE" });
-      this.loadProductsData();
+    handelDeleteCategory(id) {
+      fetch(VITE_API_SERVER + "/api/categories/" + id, { method: "DELETE" });
+      this.loadCategoriesData();
     },
   },
 };
