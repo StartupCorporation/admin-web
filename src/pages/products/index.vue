@@ -34,7 +34,7 @@
             td {{ product.category }}
             td
               .btn-group
-                a.btn.btn-primary
+                a.btn.btn-primary(:href="'/admin/products/' + product.id")
                   i.fa-solid.fa-pen-to-square
                 button.btn.btn-secondary
                   i.fa-solid.fa-trash(

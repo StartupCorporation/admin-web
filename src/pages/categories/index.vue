@@ -35,7 +35,7 @@
             td {{ category.description }}
             td
               .btn-group
-                a.btn.btn-primary
+                a.btn.btn-primary(:href="'/admin/categories/' + category.id")
                   i.fa-solid.fa-pen-to-square
                 button.btn.btn-secondary
                   i.fa-solid.fa-trash(
